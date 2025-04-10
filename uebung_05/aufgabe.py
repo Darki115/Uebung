@@ -26,6 +26,7 @@ class Fenster(QMainWindow):
         quit = QAction("Quit", self)
         quit.triggered.connect(self.menu_quit)
  
+        filemenu.addAction(load)
         filemenu.addAction(save)
         filemenu.addAction(quit)
 
@@ -86,15 +87,9 @@ class Fenster(QMainWindow):
 
 
     def auf_karte(self):
-        widgets = self.centralWidget().layout()
-        data = [
-            widgets.itemAt(7).widget().text(), #Adresse [0]
-            widgets.itemAt(9).widget().text(), #Postleitzahl [1]
-            widgets.itemAt(11).widget().text(), #Ort [2]
-            widgets.itemAt(13).widget().currentText() #Land [3]
-            ]
+        data = self.getData()
 
-        link = f"https://www.google.com/maps/place/{data[0]}+{data[1]}+{data[2]}"
+        link = f"https://www.google.com/maps/place/{data['Adresse']}+{data['Postleitzahl']}+{data['Ort']}"
 
         webbrowser.open(link) #Link Opener
 
@@ -128,6 +123,15 @@ class Fenster(QMainWindow):
         saveFile = QFileDialog.Options()
         fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()", "","Text (*.txt)", options=saveFile)
 
+        data = self.getData()
+
+        with open(fileName, "w") as file:
+            for key, value in data.items():
+                file.write(f"{key}: {value}\n")
+
+        QMessageBox.information(self, "Saved", f"Data has been saved to {fileName}")
+
+    def getData(self):
         widgets = self.centralWidget().layout()
         data = {
             "Vorname": widgets.itemAt(1).widget().text(),
@@ -138,12 +142,7 @@ class Fenster(QMainWindow):
             "Ort": widgets.itemAt(11).widget().text(),
             "Land": widgets.itemAt(13).widget().currentText()
         }
-
-        with open(fileName, "w") as file:
-            for key, value in data.items():
-                file.write(f"{key}: {value}\n")
-
-        QMessageBox.information(self, "Saved", f"Data has been saved to {fileName}")
+        return data
      
     def menu_quit(self):
         self.close()
